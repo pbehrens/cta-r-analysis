@@ -1,0 +1,154 @@
+Now that you have some data imported into R and understand some of the basic features for summarizes and viewing that data, you can start to dig into some of the features that make R truly standout as a programming language for statistics. The nature of the babies data makes it an excellent choice for utilizing some of the regression features that R offers.
+
+Basically we will want to be predicting numbers using a model we have created with a training set of data. You have one varaibles that you would like to predict and then there are multiple explanatory variables you are using to predict that find value. This post will being going over simple univariate regression, but R is perfectly capable of multivariate linear regression as well as
+<h3>Basics with Regression</h3>
+The main goals of regression analysis
+-Predicting
+Predicting housing prices using characteristics of houses
+-Assessing the effect of a variable on other variables
+Asses impact of on an industry due to raw material price increases
+- Give a description to a set of data
+
+When using a linear regression the number one assumption is that the data will some how follow a linear relationship between the input variables/predictors (x) and the response (y). If there are more than one predictor then it is a multivariate regression, otherwise is is merely a simple regression. The response variable must be continuous, but all of the other predictors can be discrete, continuous, or categorical. You may have had to plot a fitted line on a scatter plot at some point in your elementary education, as a way to predict the value of something given that the line goes through the majority of the points plotted.Simple drawing a line by eye is good enough for most day to day things, but if you want accuracy in your predictions and the ability to do it with more complex models some math is going to be used. The general form of a regression line is
+
+y = Θ<sub>0</sub> + Θ<sub>1</sub>(x1) + Θ<sub>2</sub>(x2) + Θ<sub>3</sub>(x3) +Θ<sub>3</sub>(x4)
+
+Θ<sub>0</sub> represents the y-intercept of the line and 01 the slope.
+
+For simple data it isn't that hard to just draw a line where it appears to be the best, but for accurate predictions you'll want to turn towards some math. Now if there are more variables you wanted to keep track of, the equation would get much larger and complex.
+
+To fit a line to a collection of points, most linear models will try and minimize the sum and the least squares of the models residuals. Residuals are the points that are either above or below the line and they can be seen as a way to measure the accuracy of a linear regression being made. If there sums are too big that the line is no being fit very well. Or if the sum is enormous, it may mean that the data isn't right for linear regression.
+
+For now I will go over how to make a simple one variable regression in R, using the babies.txt data and then afterwards an other model using all of the provided data.
+
+If you have moved away from the initial R prompt here is a script with all of the code we went through in the past post.
+
+You can load it into R by running the while R is running in the same directory as the source file. All of the variables created in the script will be available for your use.
+<code>
+&gt;source("Babies.R")
+</code>
+All of the variables should be loaded into the interpreter.
+<h3>Creating Linear Models</h3>
+R makes it easy to create linear models for data sets.
+
+First lets see what the data we have looks like
+<code>
+&gt;head(baby.data)
+BirthWeight Gestation Parity Age Height Weight Smoke
+1 120 284 0 27 62 100 0
+2 113 282 0 33 64 135 0
+3 128 279 0 28 64 115 1
+5 108 282 0 23 67 125 1
+6 136 286 0 25 62 93 0
+7 138 244 0 33 62 178 0
+</code>
+First we will have it split up the baby.data data frame from the previous post into a training and test set of data.
+<code>
+# input data frame and seed for random value to split up data frame
+# this is the basic structure for creating a function in R
+#function to split data frame into two parts for training and testing
+&gt; splitdf if (!is.null(seed)) set.seed(seed)
+index trainindex trainset testset list(trainset=trainset,testset=testset)
+}
+&gt; two.sets &gt; summary(two.sets[1])
+&gt; summary(two.sets[2])
+&gt; train.data &gt; test.data </code>
+
+Making a linear model for birth weight and gestation period would be interesting. We'll need to the lm() fucntion that R provides to do that.
+<code>
+# create a linear model to predict birthweight given the gestation period
+# arguments are first variable to predict values for then a ~ to denote the variables being used to predict,
+# then set data= to the baby.data from earlier
+&gt; baby.model &gt; coefficients(baby.model)
+# summary info about the new model
+&gt; summary(baby.model)</code>
+
+Residuals:
+
+Min 1Q Median 3Q Max
+-49.348 -11.065 0.218 10.101 57.704
+
+Coefficients:
+Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept) -10.75414 8.53693 -1.26 0.208
+Gestation 0.46656 0.03054 15.28 ---
+Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 16.74 on 1172 degrees of freedom
+Multiple R-squared: 0.1661, Adjusted R-squared: 0.1654
+F-statistic: 233.4 on 1 and 1172 DF, p-value: &lt; 2.2e-16 # to display the coefficients used in the model create &gt; coefficients(baby.model)
+(Intercept) Gestation
+-10.7541389 0.4665569
+
+Next we will want to create a fit line on the linear model we've created. This is done using R's predict() function. It will generate the predicted values for the linear model we are passing it.
+<code>
+# create a linear fit line for the model using the test data
+&gt; lm.fit </code>
+
+A helpful set of bnumbers when dealing with linear models are the residuals.
+
+<code>
+# Difference between original labels and lm.fit = residuals
+&gt; summary((train.data-lm.fit) - baby.model$residuals)
+</code>
+
+To see how fit the data is to the linear model you can find the root mean squared error. You do this by taking the sum of all the residual values( data points above or bellow the regression line), then taking it's square root.
+<code>
+# find the root mean squared error to see the sample standard deviation
+&gt; rmsError &gt; rmsError print("rmsError = ")
+[1] "rmsError = "
+&gt; rmsError
+[1] 17.15356
+# the RMS error is around 17 so this means on average the prediction will be off by around 17 ounces of the birth weight. So it will be within a pound or so.</code>
+
+As you can see R makes it very easy to create basic linear models for data and then use that data to see how predictions can be made using it. In the next part of this series I will go over incoroperating more variables into the linear model, so predictions can be even better.
+
+Here the the entire script created in this post. Make sure the Babies.R source file is in the same directory as this one if you want to see it run correctly. Or otherwise change the path of the argument for source().
+
+<code>
+source("Babies.R")
+head(baby.data)
+# input data frame and seed for random value to split up data frame
+splitdf if (!is.null(seed)) set.seed(seed)
+#take index from 1 to the length of the data frame
+index #find training set index
+trainindex # assign training and test set
+trainset testset list(trainset=trainset,testset=testset)
+}</code>
+
+two.sets
+
+train.datatest.data
+
+#create a linear model of the baby data trying to predict birthweight giv en other factors
+baby.model
+
+#show coefficients for the model
+coefficients(baby.model)
+
+# create a linear fit line for the model using the test data
+lm.fit
+
+# Difference between original labels and lm.fit = residuals
+summary((train.data-lm.fit) - baby.model$residuals)
+
+# find the root mean squared error to see the sample standard deviation
+rmsError
+
+print("rmsError = ")
+rmsError
+
+# the RMS error is around 16 so this means on average the prediction will be off by around 16 ounces of the birth weight
+</code>
+
+<h3>Helpful Links</h3>
+<a href="http://stat.ethz.ch/R-manual/R-patched/library/stats/html/lm.html " target="_blank">R's lm() Function
+</a>
+<a href="http://stat.ethz.ch/R-manual/R-patched/library/stats/html/predict.lm.html " target="_blank">R's predict() function
+</a>
+<a href="http://en.wikipedia.org/wiki/Linear_regression " target="_blank">Linear Regression Overview
+</a>
+<a href="http://en.wikipedia.org/wiki/Root-mean-square_deviation " target="_blank">Root Mean Squared Deviation
+</a>
+<a href="http://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics">Residuals in Statistics
+</a>

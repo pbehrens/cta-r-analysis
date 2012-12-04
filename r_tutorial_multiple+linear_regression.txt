@@ -1,0 +1,137 @@
+Multiple linear regression follows the same ideas as univariate regression, but instead of using one variable to predict and outcome, we will be using several.So there will be one dependent variable and multiple independent ones. By adding more independent variables you can make more precise predictions and model more complex systems.
+
+b<sub>0</sub> is the intercept and b<sub>1</sub>, b<sub>2</sub> and so on are just the slopes, which is similar to the way the univariate regression was. They are also known as the regression coefficients.
+
+The general formula looks like this.
+y = Θ<sub>0</sub> + Θ<sub>1</sub>(x1) + Θ<sub>2</sub>(x2) + Θ<sub>3</sub>(x3) +Θ<sub>3</sub>(x4)
+<h3>Investigating Data Before Creating Models</h3>
+Initially looking at a summary of the data frame you want to do a multiple regression on is a good start point. You'll get a little bit of a better idea of what the data is like and the range of data for each of the input variables. You can also look into the correlations of the data by using R's cor() function and see if there are any strong correlation's between any of the variables. This will establish some idea of bivariate relationships in the data set, but unfortunately they don't take in account all of the other variables we will be using. The great thing about a multiple regression is that it will give you a more pure representation of the correlation of the variables by taking them all into account.
+
+I'll just start off with some starter code that will get all of the data into a data frame and then we can start looking into the data itself some more using the techniques I've described.
+
+<code>
+# load ggplot to use later on to make some simple plots
+> library(ggplot2)</code>
+
+> baby.datacolnames(baby.data)
+
+Now we've got a data frame with the data about baby births and there mothers, and we can begin to start poking around at the data to see if we can find any interesting patterns. R's summary() function is a good place to start.
+
+<code>
+> summary(baby.data)
+birth_weight gestation parity age
+Min. : 55.0 Min. :148.0 Min. :0.0000 Min. :15.00
+1st Qu.:108.0 1st Qu.:272.0 1st Qu.:0.0000 1st Qu.:23.00
+Median :120.0 Median :280.0 Median :0.0000 Median :26.00
+Mean :119.5 Mean :279.1 Mean :0.2624 Mean :27.23
+3rd Qu.:131.0 3rd Qu.:288.0 3rd Qu.:1.0000 3rd Qu.:31.00
+Max. :176.0 Max. :353.0 Max. :1.0000 Max. :45.00
+height weight smoke
+Min. :53.00 Min. : 87.0 Min. :0.000
+1st Qu.:62.00 1st Qu.:114.2 1st Qu.:0.000
+Median :64.00 Median :125.0 Median :0.000
+Mean :64.05 Mean :128.5 Mean :0.391
+3rd Qu.:66.00 3rd Qu.:139.0 3rd Qu.:1.000
+Max. :72.00 Max. :250.0 Max. :1.000
+</code>
+
+From this we see a few interesting aspects of the data. The smoking and parity values are binary variables, so it may be interesting to split up the data set into two subsets at some point. There isn't much variance on the height, but both birth_wieght of the baby, weight of the mother, and gestation period have some what large ranges.
+
+Next, we can take a look at the correlations between the variables and see if there are any interesting relationships between the variables. You can use R's cor() function for this.
+
+<code>
+> cor(baby.data)
+birth_weight gestation parity age height
+birth_weight 1.00000000 0.40754279 -0.043908173 0.026982911 0.203704177
+gestation 0.40754279 1.00000000 0.080916029 -0.053424774 0.070469902
+parity -0.04390817 0.08091603 1.000000000 -0.351040648 0.043543487
+age 0.02698291 -0.05342477 -0.351040648 1.000000000 -0.006452846
+height 0.20370418 0.07046990 0.043543487 -0.006452846 1.000000000
+weight 0.15592327 0.02365494 -0.096362092 0.147322111 0.435287428
+smoke -0.24679951 -0.06026684 -0.009598971 -0.067771942 0.017506595
+weight smoke
+birth_weight 0.15592327 -0.246799515
+gestation 0.02365494 -0.060266842
+parity -0.09636209 -0.009598971
+age 0.14732211 -0.067771942
+height 0.43528743 0.017506595
+weight 1.00000000 -0.060281396
+smoke -0.06028140 1.000000000
+</code>
+
+There aren't too many strong correlations from this data set, a few that stick out are baby's birth weight and smoking, the baby's height and weight of the mother, and the gestation period and birth weight. There doesn't really seem to be any thing out of the ordinary for this and most of these correlations make sense. There aren't any negative ones that really stick out at all. THe only negative correlation that sticks out is between smoking and birth weight.
+
+The next step to get an even more in depth understanding of the data is to start plotting some of the varaibles and looking for linear relationships. VIsualizing the data definitely gives a better perspective of what you are working with and can expose trends thats numbers alone can't show. Since smoking and birth weight had a decent correlation we'll start by plotting them.
+
+<code>
+> ggplot(baby.data, aes(x = birth_weight, y = smoke)) + geom_point()</code>
+
+<a href="http://patrickbehrens.com/wp-content/uploads/2012/11/smoke-verse-weight.png"><img class="alignnone  wp-image-176" title="smoke-verse-weight" src="http://patrickbehrens.com/wp-content/uploads/2012/11/smoke-verse-weight.png" alt="" width="458" height="452" /></a>
+
+The only thing that sticks out from this graph is that if the mother isn't smoking the birth weight will be a little bit higher. Plotting gestation and birth weight might be more interesting because there is a stronger correlation.
+
+<code>
+> ggplot(baby.data, aes(x = gestation, y = birth)) + geom_point()</code>
+
+<a href="http://patrickbehrens.com/wp-content/uploads/2012/11/gestation-birth-weight.png"><img class="alignnone  wp-image-177" title="gestation-birth-weight" src="http://patrickbehrens.com/wp-content/uploads/2012/11/gestation-birth-weight.png" alt="" width="457" height="454" /></a>
+This plot is much more revealing and you can clearly seen a linear relationship between the two variables. You can use ggplots geom_smooth() function to plot a fitted line to the data and see the relationships a little bit better. The method argument is set to lm, so it will use a linear model to make the fitted line. THere are many other options you can use as well. The se argument decides if you want to see the distribution of the standard error of the fitted line.
+
+<code>
+> ggplot(baby.data, aes(x = gestation, y = birth_weight)) +
+> geom_point()+
+> geom_smooth(method = 'lm', se = FALSE)
+</code>
+<a href="http://patrickbehrens.com/wp-content/uploads/2012/11/gestation-birthweight-fitted.png"><img class="alignnone  wp-image-178" title="gestation-birthweight-fitted" src="http://patrickbehrens.com/wp-content/uploads/2012/11/gestation-birthweight-fitted.png" alt="" width="454" height="455" /></a>
+The fitted line doesn't seem to be too revealing, but that is mostly because the correlation between the two variables wasn't incredibly strong. There is still clearly a linear relationship between them though. By incorporating more input variables into the regression better predictions will be able to be created.
+
+An other tehcnique to get more informoatiomn about the data is to make some density plots of the data you are working with. Here is a simple one for birth weight.
+
+<code>
+ggplot(baby.data, aes(x = BirthWeight)) + geom_density()
+</code>
+<a href="http://patrickbehrens.com/wp-content/uploads/2012/11/birthweight-density.png"><img class="alignnone  wp-image-179" title="birthweight-density" src="http://patrickbehrens.com/wp-content/uploads/2012/11/birthweight-density.png" alt="" width="449" height="450" /></a>
+This is a nice way to visualize the data. From this graph you can see that birth weight follows a normal distribution. If this wasn't the case it might be helpful to take the log of the variable and see how that turns out. Just use R's log() function. That type of thing is an other topic that I will write about later, when I deal with scaling and normalizing data.
+
+These are just a few of the techniques you can use to look into the data you are working with before trying to build models with it. Getting to know the data well and any relationships can make it much easier to create models that will help you accurately predict values later on.
+<h3>Multiple Regressions</h3>
+Now that you have analyzed the data and understand some of the relationships within the data set, its time to create a model with the data and begin to make predictions. You will be using the same lm() function that is used for univariate regressions except the formulation being used will be modified to include the rest of the input variables. Let's start off by trying to predict the birth weight of a baby given all of the other input variables.
+
+<code>
+> baby.modelsummary(baby.model)</code>
+
+Call:
+lm(formula = BirthWeight ~ Gestation + Parity + Age + Height +
+Weight + Smoke, data = baby.data)
+
+Residuals:
+Min 1Q Median 3Q Max
+-57.613 -10.189 -0.135 9.683 51.713
+
+Coefficients:
+Estimate Std. Error t value Pr(>|t|)
+(Intercept) -80.41085 14.34657 -5.605 2.60e-08 ***
+Gestation 0.44398 0.02910 15.258 &lt; 2e-16 ***
+Parity -3.32720 1.12895 -2.947 0.00327 **
+Age -0.00895 0.08582 -0.104 0.91696
+Height 1.15402 0.20502 5.629 2.27e-08 ***
+Weight 0.05017 0.02524 1.987 0.04711 *
+Smoke -8.40073 0.95382 -8.807 &lt; 2e-16 ***
+---
+Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 15.83 on 1167 degrees of freedom
+Multiple R-squared: 0.258, Adjusted R-squared: 0.2541
+F-statistic: 67.61 on 6 and 1167 DF, p-value: &lt; 2.2e-16
+
+Now you should have a linear model that incorporates multiple input variables. In later post I will go over what all of this data means, but I'll also put some links at the bottom to explain some of the topics. The next post will go over seeing how the model preforms and the amount of error. Also some ways to minimize the error as well.
+<h3>Helpful Reading</h3>
+<ul>
+	<li><a title="Errors and Residuals" href="http://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics">Errors and Residuals</a></li>
+	<li><a href="http://en.wikipedia.org/wiki/Standard_error " target="_blank">Standard Error</a></li>
+	<li><a title="R-squared" href="http://en.wikipedia.org/wiki/Coefficient_of_determination " target="_blank">R-squared</a></li>
+	<li><a title="P-value" href="http://en.wikipedia.org/wiki/P-value " target="_blank">P-values</a></li>
+	<li><a title="F-statistics" href="http://en.wikipedia.org/wiki/F-statistics" target="_blank">F-statistics</a></li>
+	<li><a href="http://stat.ethz.ch/R-manual/R-patched/library/stats/html/cor.html" target="_blank">R - cor() function</a></li>
+	<li><a title="lm() function" href="http://stat.ethz.ch/R-manual/R-patched/library/stats/html/lm.html " target="_blank">R - lm() function</a></li>
+	<li><a title="ggplot2 - geom_smooth()" href="http://docs.ggplot2.org/current/geom_smooth.html" target="_blank">ggplot2 - geom_smooth()</a></li>
+</ul>
